@@ -20,9 +20,33 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
+          request_pty: true
           script: |
-            cd restfull_api_forum
+            set -e
+
+            [ -f "$HOME/.profile" ] && . "$HOME/.profile"
+            [ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"
+
+            export NVM_DIR="$HOME/.nvm"
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              . "$NVM_DIR/nvm.sh"
+              nvm install 22
+              nvm use 22
+            fi
+
+            if ! command -v npm >/dev/null 2>&1; then
+              echo "npm not found. Install Node.js/NPM on server or ensure NVM is configured for this user."
+              exit 127
+            fi
+
+            cd ~/restfull_api_forum
             git pull --ff-only origin main
             npm ci --no-audit --no-fund
             npm run migrate up
-            pm2 restart forum-api
+
+            if command -v pm2 >/dev/null 2>&1; then
+              pm2 restart forum-api
+            else
+              echo "pm2 not found. Install PM2 globally (npm i -g pm2) for deploy user."
+              exit 127
+            fi
