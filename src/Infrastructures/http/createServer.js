@@ -11,6 +11,14 @@ const createServer = async (container) => {
   // Middleware for parsing JSON
   app.use(express.json());
 
+  // Root endpoint - Say Hello World
+  app.get('/', (req, res) => {
+    res.status(200).json({
+      status: 'success',
+      message: 'Hello World, Welcome to Forum API',
+    });
+  });
+
   // Register routes
   app.use('/users', users(container));
   app.use('/authentications', authentications(container));
