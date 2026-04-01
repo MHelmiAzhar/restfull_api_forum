@@ -1,9 +1,6 @@
 # dependencies
 node_modules/
 
-# lockfile (dipertahankan sesuai pengaturan proyek saat ini)
-package-lock.json
-
 # env files
 .env
 .env.*
