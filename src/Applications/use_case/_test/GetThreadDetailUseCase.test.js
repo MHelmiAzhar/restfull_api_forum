@@ -24,6 +24,7 @@ describe('GetThreadDetailUseCase', () => {
         username: 'dicoding',
         date: '2026-03-22T00:00:00.000Z',
         content: 'sebuah komentar',
+        likeCount: 2,
       },
     ]));
 
@@ -51,5 +52,6 @@ describe('GetThreadDetailUseCase', () => {
 
     expect(thread.comments[0].replies).toHaveLength(1);
     expect(thread.comments[0].replies[0].id).toEqual('reply-123');
+    expect(thread.comments[0].likeCount).toEqual(2);
   });
 });

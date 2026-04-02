@@ -70,9 +70,15 @@ class CommentRepositoryPostgres extends CommentRepository {
         CASE
           WHEN c."isDelete" = true THEN '**komentar telah dihapus**'
           ELSE c.content
-        END AS content
+        END AS content,
+        COALESCE(cl."likeCount", 0)::integer AS "likeCount"
         FROM comments c
         JOIN users u ON u.id = c.owner
+        LEFT JOIN (
+          SELECT "commentId", COUNT(*) AS "likeCount"
+          FROM comment_likes
+          GROUP BY "commentId"
+        ) cl ON cl."commentId" = c.id
         WHERE c."threadId" = $1
         ORDER BY c."createdAt" ASC
       `,
@@ -81,6 +87,35 @@ class CommentRepositoryPostgres extends CommentRepository {
 
     const result = await this._pool.query(query);
     return result.rows;
+  }
+
+  async isCommentLikedByUser(commentId, owner) {
+    const query = {
+      text: 'SELECT id FROM comment_likes WHERE "commentId" = $1 AND owner = $2',
+      values: [commentId, owner],
+    };
+
+    const result = await this._pool.query(query);
+    return Boolean(result.rowCount);
+  }
+
+  async likeComment(commentId, owner) {
+    const id = `comment-like-${this._idGenerator()}`;
+    const query = {
+      text: 'INSERT INTO comment_likes(id, "commentId", owner) VALUES($1, $2, $3)',
+      values: [id, commentId, owner],
+    };
+
+    await this._pool.query(query);
+  }
+
+  async unlikeComment(commentId, owner) {
+    const query = {
+      text: 'DELETE FROM comment_likes WHERE "commentId" = $1 AND owner = $2',
+      values: [commentId, owner],
+    };
+
+    await this._pool.query(query);
   }
 }
 
