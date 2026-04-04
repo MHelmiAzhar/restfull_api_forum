@@ -1,13 +1,13 @@
 import express from 'express';
 import authentication from '../../middleware/authentication.js';
-import createRateLimiter from '../../middleware/rateLimit.js';
+// import createRateLimiter from '../../middleware/rateLimit.js';
 
 const createThreadsRouter = (handler) => {
   const router = express.Router();
-  const rateLimiter = createRateLimiter();
+  // const rateLimiter = createRateLimiter();
 
-  // Apply rate limiter to all /threads routes
-  router.use(rateLimiter);
+  // // Apply rate limiter to all /threads routes
+  // router.use(rateLimiter);
 
   router.post('/', authentication, handler.postThreadHandler);
   router.get('/:threadId', handler.getThreadByIdHandler);
