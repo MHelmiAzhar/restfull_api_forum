@@ -42,7 +42,7 @@ jobs:
             cd ~/restfull_api_forum
             git pull --ff-only origin main
             npm ci --no-audit --no-fund
-            npm run migrate up
+            npm run migrate:prod up
 
             if command -v pm2 >/dev/null 2>&1; then
               pm2 restart forum-api
