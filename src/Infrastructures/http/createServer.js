@@ -5,6 +5,33 @@ import users from '../../Interfaces/http/api/users/index.js';
 import authentications from '../../Interfaces/http/api/authentications/index.js';
 import threads from '../../Interfaces/http/api/threads/index.js';
 
+const SENSITIVE_KEYS = new Set([
+  'password',
+  'accessToken',
+  'refreshToken',
+  'authorization',
+]);
+
+const sanitizeForLog = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeForLog(item));
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.entries(value).reduce((acc, [key, val]) => {
+      if (SENSITIVE_KEYS.has(key)) {
+        acc[key] = '[REDACTED]';
+      } else {
+        acc[key] = sanitizeForLog(val);
+      }
+
+      return acc;
+    }, {});
+  }
+
+  return value;
+};
+
 const createServer = async (container) => {
   const app = express();
 
@@ -36,6 +63,24 @@ const createServer = async (container) => {
         message: translatedError.message,
       });
     }
+
+    const requestContext = {
+      method: req.method,
+      path: req.originalUrl,
+      params: sanitizeForLog(req.params),
+      query: sanitizeForLog(req.query),
+      body: sanitizeForLog(req.body),
+      userId: req.auth?.id,
+    };
+
+    console.error('[INTERNAL_SERVER_ERROR]', {
+      request: requestContext,
+      error: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      },
+    });
 
     // penanganan server error sesuai kebutuhan
     return res.status(500).json({
