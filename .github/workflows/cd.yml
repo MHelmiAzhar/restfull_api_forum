@@ -40,7 +40,8 @@ jobs:
             fi
 
             cd ~/restfull_api_forum
-            git pull --ff-only origin main
+            git fetch origin main
+            git reset --hard origin/main
             npm ci --no-audit --no-fund
             npm run migrate:prod up
 
